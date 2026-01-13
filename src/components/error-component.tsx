@@ -1,4 +1,4 @@
-import { Alert, Button, Code, Container, Flex, Spoiler } from "@mantine/core";
+import { Alert, Button, Code, Container, Flex } from "@mantine/core";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { ThemeToggle } from "./theme-toggle";
 

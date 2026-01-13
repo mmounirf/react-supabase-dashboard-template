@@ -2,6 +2,26 @@
 
 This is a minimal, well-architected dashboard template built with React 19, TypeScript, TanStack Router/Query, Mantine UI, Tailwind CSS, and Supabase (PostgreSQL, Auth, Edge Functions). The template provides authentication, routing, and UI foundation for building dashboard applications.
 
+## Work Protocol
+
+**Feature Implementation Requirements:**
+- Every task or feature implementation MUST follow a PRD (Product Requirements Document)
+- PRD documents live in `/docs/` directory
+- Agents MUST NOT implement features without an approved PRD
+
+**PRD Adherence:**
+- Agents MUST NOT invent new requirements beyond what's documented in the PRD
+- If requirements are unclear or incomplete, agents MUST ask for clarification
+- Ask questions early and append all gained knowledge and answered questions to the specific PRD
+- Keep PRDs updated as implementation reveals new information or edge cases
+
+**Workflow:**
+1. Read and understand the PRD for the requested feature
+2. Identify any gaps, ambiguities, or missing requirements
+3. Ask for clarification if PRD is incomplete
+4. Append resolved questions and insights to the PRD
+5. Implement according to approved PRD specifications
+
 ## Essential Commands
 
 **Development:**
@@ -19,6 +39,11 @@ This is a minimal, well-architected dashboard template built with React 19, Type
 
 **Testing:**
 - No test framework currently configured - add when implementing tests
+
+**Route Management:**
+- Always run `npm run dev` after creating new route files to regenerate `src/routeTree.gen.ts`
+- TypeScript errors about missing routes resolve automatically after route tree regeneration
+- Briefly start dev server (5-10s) to trigger route tree generation, then stop it
 
 ## Code Style Guidelines
 
@@ -60,6 +85,12 @@ This is a minimal, well-architected dashboard template built with React 19, Type
 - Router auto-generates `routeTree.gen.ts` when route files change
 - Access router context in routes: `context.queryClient`, `context.supabase`
 
+**Route Groups:**
+- Use parentheses `(folder)` for pathless route grouping without URL impact
+- Example: `src/routes/(auth)/login/route.tsx` creates `/login` route
+- Use parentheses for grouping related routes (e.g., auth routes) without affecting URL paths
+- Preferred over `_folder` convention for clearer intent and better DX
+
 **Data Fetching (TanStack Query):**
 - QueryClient initialized in `src/router.ts` with defaultPreload: "intent"
 - Access queryClient via router context in route loaders and components
@@ -78,6 +109,14 @@ This is a minimal, well-architected dashboard template built with React 19, Type
 - Combine Mantine components with Tailwind utility classes when needed
 - Classes are automatically sorted by Biome's useSortedClasses rule
 - Theme configured in `src/theme.ts` with custom colors (primaryColor: "brand")
+
+**Form Validation:**
+- Use `import { z } from "zod"` for schema validation (avoids locale bundle bloat)
+- Install `mantine-form-zod-resolver` package for official integration
+- Import resolver: `import { zodResolver } from "mantine-form-zod-resolver"`
+- Define schemas with `z.object()`, `z.email()`, `z.string().min()`, etc.
+- Use `validate: zodResolver(schema)` in useForm configuration
+- Infer form types with `type FormValues = z.infer<typeof schema>`
 
 **Styling:**
 - Import global styles in `src/main.tsx`: `./styles/styles.css` includes Tailwind and Mantine
@@ -106,3 +145,41 @@ This is a minimal, well-architected dashboard template built with React 19, Type
 - Template forking: Delete `routes/dashboard/` and `routes/index.tsx` when starting a new project
 - Keep `AuthProvider`, router configuration, and Supabase client intact for auth foundation
 - Run `npm run fix` before committing to ensure code style compliance
+
+## Authentication Patterns
+
+**Protected Routes:**
+- Add `beforeLoad` to check authentication status in route configuration
+- Redirect unauthenticated users to `/login?redirectTo=[current-path]`
+- Example:
+  ```typescript
+  beforeLoad: async ({ context, location }) => {
+    if (!context.session) {
+      throw redirect({
+        to: "/login",
+        search: { redirectTo: location.pathname },
+      });
+    }
+  }
+  ```
+
+**Login Routes:**
+- Redirect authenticated users away from login using `beforeLoad`
+- Validate search params with `validateSearch` for `redirectTo` parameter
+- Example:
+  ```typescript
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirectTo: typeof search.redirectTo === "string" ? search.redirectTo : undefined,
+  }),
+  beforeLoad: async ({ context, search }) => {
+    if (context.session) {
+      throw redirect({ to: search.redirectTo || "/dashboard" });
+    }
+  }
+  ```
+
+**Supabase Authentication:**
+- Use `supabase.auth.signInWithPassword()` for email/password login
+- AuthProvider's `onAuthStateChange` automatically updates session state
+- After successful auth, `router.invalidate()` triggers route re-evaluation
+- Redirects are handled via `beforeLoad` on route re-evaluation
