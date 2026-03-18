@@ -4,7 +4,11 @@
   "version": "0.0.1",
   "description": "A template reporepository for dashboard based apps based on supabase.",
   "author": "Mohamed Mounir <mou@mmounir.dev> (https://mmounir.dev)",
-  "keywords": ["react", "typescript", "supabase"],
+  "keywords": [
+    "react",
+    "typescript",
+    "supabase"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mmounirf/react-supabase-dashboard-template.git"
