@@ -1,10 +1,24 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
-import { TanStackDevtools } from "@tanstack/react-devtools"
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+  useRouter,
+} from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 
-import appCss from "../styles.css?url"
+import { QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import appCss from "../styles.css?url";
+import type { QueryClient } from "@tanstack/react-query";
+import type { GoTrueClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+  session: Awaited<ReturnType<GoTrueClient["getClaims"]>>;
+}>()({
   head: () => ({
     meta: [
       {
@@ -15,7 +29,7 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "React Supabase Dashboard Template",
       },
     ],
     links: [
@@ -26,7 +40,52 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
-})
+  component: RootLayout,
+});
+
+function RootLayout() {
+  const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setTimeout(async () => {
+        const claims = await supabase.auth.getClaims(session?.access_token);
+        router.update({
+          context: {
+            ...router.options.context,
+            session: claims,
+          },
+        });
+
+        if (["SIGNED_IN", "SIGNED_OUT", "TOKEN_REFRESHED"].includes(event)) {
+          router.invalidate();
+        }
+      }, 0);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+      <TanStackDevtools
+        config={{
+          position: "bottom-right",
+        }}
+        plugins={[
+          {
+            name: "Tanstack Router",
+            render: <TanStackRouterDevtoolsPanel />,
+          },
+        ]}
+      />
+    </QueryClientProvider>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -36,19 +95,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
         <Scripts />
       </body>
     </html>
-  )
+  );
 }
