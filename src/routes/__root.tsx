@@ -50,9 +50,9 @@ function RootLayout() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase().auth.onAuthStateChange((event, session) => {
       setTimeout(async () => {
-        const claims = await supabase.auth.getClaims(session?.access_token);
+        const claims = await supabase().auth.getClaims(session?.access_token);
         router.update({
           context: {
             ...router.options.context,

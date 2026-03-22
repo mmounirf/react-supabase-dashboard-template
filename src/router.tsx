@@ -2,6 +2,7 @@ import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
 import { supabase } from "./lib/supabase";
+import NotFoundComponent from "./components/not-found";
 
 export async function getRouter() {
   const queryClient = new QueryClient({
@@ -23,6 +24,7 @@ export async function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    defaultNotFoundComponent: NotFoundComponent,
   });
 
   return router;
