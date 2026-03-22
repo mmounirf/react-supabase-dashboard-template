@@ -48,10 +48,13 @@ function RootLayout() {
   const router = useRouter();
 
   useEffect(() => {
+    let deadLock: NodeJS.Timeout;
     const {
       data: { subscription },
     } = supabase().auth.onAuthStateChange((event, session) => {
-      setTimeout(async () => {
+      clearTimeout(deadLock);
+
+      deadLock = setTimeout(async () => {
         const claims = await supabase().auth.getClaims(session?.access_token);
         router.update({
           context: {
@@ -66,7 +69,10 @@ function RootLayout() {
       }, 0);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(deadLock);
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   return (
