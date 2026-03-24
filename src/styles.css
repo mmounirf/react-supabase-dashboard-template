@@ -122,9 +122,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    width: 100dvw;
+    height: 100dvh;
   }
   html {
     @apply font-sans;
+    width: 100dvw;
+    height: 100dvh;
   }
 
   button {

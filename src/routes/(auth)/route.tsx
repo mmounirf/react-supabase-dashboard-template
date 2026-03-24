@@ -7,8 +7,8 @@ export const Route = createFileRoute("/(auth)")({
 
 function RouteComponent() {
   return (
-    <main className="w-dvw h-dvh flex flex-col items-center justify-center bg-muted">
-      <Card className="w-4xl overflow-hidden p-0">
+    <main className="w-full h-full flex flex-col items-center justify-center bg-muted">
+      <Card className="container max-w-4/5 w-4xl overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
           <Outlet />
           <div className="relative hidden bg-muted md:block">
