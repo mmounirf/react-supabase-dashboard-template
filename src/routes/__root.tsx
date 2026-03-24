@@ -6,6 +6,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -26,7 +27,7 @@ export const Route = createRootRouteWithContext<{
       },
       {
         name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        content: "width=device-width, initial-scale=1, minimum-scale=1",
       },
       {
         title: "React Supabase Dashboard Template",
@@ -86,6 +87,10 @@ function RootLayout() {
           {
             name: "Tanstack Router",
             render: <TanStackRouterDevtoolsPanel />,
+          },
+          {
+            name: "Tanstack Query",
+            render: <ReactQueryDevtools />,
           },
         ]}
       />
